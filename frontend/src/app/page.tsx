@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 
 type Status = { message: string; time?: string } | null;
 
@@ -87,6 +88,10 @@ export default function Home() {
           )}
         </div>
       )}
+
+      <Link href="/logs" style={{ marginTop: '16px', color: '#4338ca' }}>
+        ログ一覧を見る →
+      </Link>
     </main>
   );
 }
