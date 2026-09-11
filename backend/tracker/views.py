@@ -1,6 +1,5 @@
-from django.shortcuts import render
+from datetime import datetime, timedelta
 
-# Create your views here.
 from django.utils import timezone
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -20,9 +19,26 @@ def record_wake(request):
 
 @api_view(['POST'])
 def record_sleep(request):
-    today = timezone.localdate()
-    log, _ = DailyLog.objects.get_or_create(date=today)
-    log.sleep_time = timezone.now()
+    time_str = request.data.get('time')
+    if not time_str:
+        return Response({'error': 'time is required (HH:MM)'}, status=400)
+
+    try:
+        hour, minute = map(int, time_str.split(':'))
+        if not (0 <= hour < 24 and 0 <= minute < 60):
+            raise ValueError
+    except (ValueError, AttributeError):
+        return Response({'error': 'invalid time format, expected HH:MM'}, status=400)
+
+    # 「昨夜の就寝」なので、前日の日付のレコードに紐付ける
+    yesterday = timezone.localdate() - timedelta(days=1)
+    naive_dt = datetime.combine(yesterday, datetime.min.time()).replace(
+        hour=hour, minute=minute
+    )
+    aware_dt = timezone.make_aware(naive_dt)
+
+    log, _ = DailyLog.objects.get_or_create(date=yesterday)
+    log.sleep_time = aware_dt
     log.save()
     return Response(DailyLogSerializer(log).data)
 
