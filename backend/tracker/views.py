@@ -4,6 +4,7 @@ from django.utils import timezone
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.generics import ListAPIView
+from rest_framework.views import APIView
 from .models import DailyLog
 from .serializers import DailyLogSerializer
 
@@ -30,7 +31,6 @@ def record_sleep(request):
     except (ValueError, AttributeError):
         return Response({'error': 'invalid time format, expected HH:MM'}, status=400)
 
-    # 「昨夜の就寝」なので、前日の日付のレコードに紐付ける
     yesterday = timezone.localdate() - timedelta(days=1)
     naive_dt = datetime.combine(yesterday, datetime.min.time()).replace(
         hour=hour, minute=minute
@@ -46,3 +46,31 @@ def record_sleep(request):
 class DailyLogListView(ListAPIView):
     queryset = DailyLog.objects.all().order_by('-date')
     serializer_class = DailyLogSerializer
+
+
+class SleepSessionListView(APIView):
+    """
+    Pairs each record's sleep_time with the following day's wake_time,
+    representing one continuous sleep session (evening -> next morning).
+    """
+
+    def get(self, request):
+        logs = list(DailyLog.objects.all().order_by('date'))
+        sessions = []
+
+        for i, log in enumerate(logs):
+            wake_time = None
+            if i + 1 < len(logs):
+                wake_time = logs[i + 1].wake_time
+
+            if log.sleep_time is None and wake_time is None:
+                continue
+
+            sessions.append({
+                'sleep_date': log.date,
+                'sleep_time': log.sleep_time,
+                'wake_time': wake_time,
+            })
+
+        sessions.sort(key=lambda s: s['sleep_date'], reverse=True)
+        return Response(sessions)
