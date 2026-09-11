@@ -8,6 +8,7 @@ type Status = { message: string; time?: string } | null;
 export default function Home() {
   const [status, setStatus] = useState<Status>(null);
   const [loading, setLoading] = useState<'wake' | 'sleep' | null>(null);
+  const [pressed, setPressed] = useState<'wake' | 'sleep' | null>(null);
 
   const recordEvent = async (type: 'wake' | 'sleep') => {
     setLoading(type);
@@ -46,6 +47,9 @@ export default function Home() {
 
       <button
         onClick={() => recordEvent('wake')}
+        onPointerDown={() => setPressed('wake')}
+        onPointerUp={() => setPressed(null)}
+        onPointerLeave={() => setPressed(null)}
         disabled={loading !== null}
         style={{
           width: '80%',
@@ -54,8 +58,10 @@ export default function Home() {
           fontSize: '1.25rem',
           borderRadius: '16px',
           border: 'none',
-          background: '#fbbf24',
+          background: pressed === 'wake' ? '#d99a1a' : '#fbbf24',
           color: '#1f2937',
+          transform: pressed === 'wake' ? 'scale(0.96)' : 'scale(1)',
+          transition: 'transform 0.1s ease, background 0.1s ease',
         }}
       >
         {loading === 'wake' ? '記録中...' : '☀️ 起床'}
@@ -63,6 +69,9 @@ export default function Home() {
 
       <button
         onClick={() => recordEvent('sleep')}
+        onPointerDown={() => setPressed('sleep')}
+        onPointerUp={() => setPressed(null)}
+        onPointerLeave={() => setPressed(null)}
         disabled={loading !== null}
         style={{
           width: '80%',
@@ -71,8 +80,10 @@ export default function Home() {
           fontSize: '1.25rem',
           borderRadius: '16px',
           border: 'none',
-          background: '#4338ca',
+          background: pressed === 'sleep' ? '#332a8f' : '#4338ca',
           color: '#fff',
+          transform: pressed === 'sleep' ? 'scale(0.96)' : 'scale(1)',
+          transition: 'transform 0.1s ease, background 0.1s ease',
         }}
       >
         {loading === 'sleep' ? '記録中...' : '🌙 就寝'}
