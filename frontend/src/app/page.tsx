@@ -15,7 +15,7 @@ export default function Home() {
     setStatus(null);
 
     const sleepTimeInput = window.prompt(
-      '昨夜は何時に寝ましたか？(例: 23:30)\n分からなければ空欄のままでOKです'
+      '昨夜は何時に寝ましたか？(例: 23:30)\n日付をまたいだ場合は24を超えて入力してください(深夜1:15なら25:15)\n分からなければ空欄のままでOKです'
     );
 
     let note: string | undefined;
