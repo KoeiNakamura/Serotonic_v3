@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta
 
 from django.utils import timezone
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.generics import ListAPIView
 from rest_framework.views import APIView
@@ -10,15 +11,17 @@ from .serializers import DailyLogSerializer
 
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def record_wake(request):
     today = timezone.localdate()
-    log, _ = DailyLog.objects.get_or_create(date=today)
+    log, _ = DailyLog.objects.get_or_create(user=request.user, date=today)
     log.wake_time = timezone.now()
     log.save()
     return Response(DailyLogSerializer(log).data)
 
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def record_sleep(request):
     time_str = request.data.get('time')
     if not time_str:
@@ -43,21 +46,24 @@ def record_sleep(request):
     )
     aware_dt = timezone.make_aware(naive_dt)
 
-    log, _ = DailyLog.objects.get_or_create(date=target_date)
+    log, _ = DailyLog.objects.get_or_create(user=request.user, date=target_date)
     log.sleep_time = aware_dt
     log.save()
     return Response(DailyLogSerializer(log).data)
 
 
 class DailyLogListView(ListAPIView):
-    queryset = DailyLog.objects.all().order_by('-date')
     serializer_class = DailyLogSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return DailyLog.objects.filter(user=self.request.user).order_by('-date')
 
 
 class SleepSessionListView(APIView):
     """
     Builds sleep sessions by pairing each sleep_time with the wake_time that
-    follows it.
+    follows it, scoped to the logged-in user.
 
     A sleep_time recorded before noon is treated as a past-midnight bedtime
     and is paired with that same record's own wake_time. A sleep_time at or
@@ -65,8 +71,10 @@ class SleepSessionListView(APIView):
     following day's wake_time.
     """
 
+    permission_classes = [IsAuthenticated]
+
     def get(self, request):
-        logs = list(DailyLog.objects.all().order_by('date'))
+        logs = list(DailyLog.objects.filter(user=request.user).order_by('date'))
         sessions = []
         consumed_wake_ids = set()
 
@@ -97,7 +105,6 @@ class SleepSessionListView(APIView):
                 'duration_minutes': duration_minutes,
             })
 
-        # sleep_timeとペアにならなかった、孤立したwake_timeも表示に含める
         for log in logs:
             if log.wake_time is not None and log.id not in consumed_wake_ids:
                 sessions.append({
