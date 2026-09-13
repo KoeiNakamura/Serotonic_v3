@@ -1,14 +1,28 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { authFetch, getAccessToken, clearTokens } from '@/lib/api';
 
 type Status = { message: string; time?: string; note?: string } | null;
 
 export default function Home() {
   const [status, setStatus] = useState<Status>(null);
+  const [username, setUsername] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [pressed, setPressed] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!getAccessToken()) {
+      router.replace('/login');
+      return;
+    }
+    authFetch('/me/')
+      .then((res) => res.json())
+      .then((data) => setUsername(data.username));
+  }, [router]);
 
   const recordWake = async () => {
     setLoading(true);
@@ -22,7 +36,7 @@ export default function Home() {
 
     try {
       if (sleepTimeInput && sleepTimeInput.trim() !== '') {
-        const sleepRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/sleep/`, {
+        const sleepRes = await authFetch('/sleep/', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ time: sleepTimeInput.trim() }),
@@ -32,9 +46,7 @@ export default function Home() {
         }
       }
 
-      const wakeRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/wake/`, {
-        method: 'POST',
-      });
+      const wakeRes = await authFetch('/wake/', { method: 'POST' });
       if (!wakeRes.ok) throw new Error('Request failed');
       const data = await wakeRes.json();
 
@@ -50,6 +62,11 @@ export default function Home() {
     }
   };
 
+  const handleLogout = () => {
+    clearTokens();
+    router.replace('/login');
+  };
+
   return (
     <main
       style={{
@@ -62,7 +79,12 @@ export default function Home() {
         padding: '24px',
       }}
     >
-      <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>Serotonic</h1>
+      <h1 style={{ fontSize: '2rem', fontWeight: 'bold' }}>Serotonic</h1>
+      {username && (
+        <p style={{ fontSize: '1rem', color: '#9ca3af', marginTop: '-16px' }}>
+          Hello, {username}！
+        </p>
+      )}
 
       <button
         onClick={recordWake}
@@ -103,6 +125,20 @@ export default function Home() {
       <Link href="/logs" style={{ marginTop: '16px', color: '#4338ca' }}>
         ログ一覧を見る →
       </Link>
+
+      <button
+        onClick={handleLogout}
+        style={{
+          marginTop: '8px',
+          background: 'none',
+          border: 'none',
+          color: '#9ca3af',
+          fontSize: '0.875rem',
+          textDecoration: 'underline',
+        }}
+      >
+        ログアウト
+      </button>
     </main>
   );
 }

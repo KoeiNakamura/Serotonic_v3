@@ -2,26 +2,42 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { authFetch, getAccessToken } from '@/lib/api';
 
 type SleepSession = {
   sleep_date: string;
   sleep_time: string | null;
   wake_time: string | null;
+  duration_minutes: number | null;
 };
 
 const formatTime = (t: string | null) =>
   t ? new Date(t).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }) : '未記録';
 
+const formatDuration = (minutes: number | null) => {
+  if (minutes === null) return '-';
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return `${h}時間${m}分`;
+};
+
 export default function LogsPage() {
   const [sessions, setSessions] = useState<SleepSession[]>([]);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/sessions/`)
+    if (!getAccessToken()) {
+      router.replace('/login');
+      return;
+    }
+
+    authFetch('/sessions/')
       .then((res) => res.json())
       .then((data) => setSessions(data))
       .finally(() => setLoading(false));
-  }, []);
+  }, [router]);
 
   return (
     <main style={{ padding: '24px', maxWidth: '480px', margin: '0 auto' }}>
@@ -46,6 +62,9 @@ export default function LogsPage() {
             <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>{session.sleep_date}の夜</div>
             <div>🌙 就寝: {formatTime(session.sleep_time)}</div>
             <div>☀️ 起床: {formatTime(session.wake_time)}</div>
+            <div style={{ marginTop: '4px', color: '#4338ca', fontWeight: 'bold' }}>
+              💤 睡眠時間: {formatDuration(session.duration_minutes)}
+            </div>
           </li>
         ))}
       </ul>
