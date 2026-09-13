@@ -116,3 +116,8 @@ class SleepSessionListView(APIView):
 
         sessions.sort(key=lambda s: s['sleep_date'], reverse=True)
         return Response(sessions)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def whoami(request):
+    return Response({'username': request.user.username})
