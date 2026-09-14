@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { authFetch, getAccessToken } from '@/lib/api';
 import { Card } from '@/components/Card';
+import { WeekBarGraph } from '@/components/WeekBarGraph';
 
 type SleepSession = {
   sleep_date: string;
@@ -60,7 +61,16 @@ export default function LogsPage() {
 
   return (
     <main className="p-6 max-w-md mx-auto">
-      <h1 className="text-xl font-bold mb-4">ログ一覧</h1>
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-xl font-bold">ログ一覧</h1>
+        <Link href="/" className="text-primary text-sm">
+          ← 戻る
+        </Link>
+      </div>
+
+      {!loading && sessions.length > 0 && <WeekBarGraph sessions={sessions} />}
+
+
 
       {loading && <p className="text-muted">読み込み中...</p>}
 
