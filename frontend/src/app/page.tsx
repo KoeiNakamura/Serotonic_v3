@@ -92,6 +92,10 @@ export default function Home() {
         ログ一覧を見る →
       </Link>
 
+      <Link href="/checkin" className="text-primary mt-1">
+        今日の調子を記録する →
+      </Link>
+
       <button onClick={handleLogout} className="text-muted text-sm underline">
         ログアウト
       </button>

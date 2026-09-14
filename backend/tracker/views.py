@@ -121,3 +121,42 @@ class SleepSessionListView(APIView):
 @permission_classes([IsAuthenticated])
 def whoami(request):
     return Response({'username': request.user.username})
+
+from .models import CheckIn
+from .serializers import CheckInSerializer
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def record_checkin(request):
+    timing = request.data.get('timing')
+    rating = request.data.get('rating')
+
+    if timing not in ('wake', 'midday', 'bedtime'):
+        return Response({'error': 'invalid timing'}, status=400)
+
+    try:
+        rating = int(rating)
+        if not (1 <= rating <= 5):
+            raise ValueError
+    except (TypeError, ValueError):
+        return Response({'error': 'rating must be an integer 1-5'}, status=400)
+
+    today = timezone.localdate()
+    checkin, _ = CheckIn.objects.update_or_create(
+        user=request.user,
+        date=today,
+        timing=timing,
+        defaults={'rating': rating},
+    )
+    return Response(CheckInSerializer(checkin).data)
+
+
+class TodayCheckInsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        today = timezone.localdate()
+        checkins = CheckIn.objects.filter(user=request.user, date=today)
+        data = {c.timing: c.rating for c in checkins}
+        return Response(data)
