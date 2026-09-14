@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { authFetch, getAccessToken } from '@/lib/api';
+import { Card } from '@/components/Card';
 
 type SleepSession = {
   sleep_date: string;
@@ -32,7 +33,6 @@ export default function LogsPage() {
       router.replace('/login');
       return;
     }
-
     authFetch('/sessions/')
       .then((res) => res.json())
       .then((data) => setSessions(data))
@@ -40,37 +40,31 @@ export default function LogsPage() {
   }, [router]);
 
   return (
-    <main style={{ padding: '24px', maxWidth: '480px', margin: '0 auto' }}>
-      <h1 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '16px' }}>
-        ログ一覧
-      </h1>
+    <main className="p-6 max-w-md mx-auto">
+      <h1 className="text-xl font-bold mb-4">ログ一覧</h1>
 
-      {loading && <p>読み込み中...</p>}
+      {loading && <p className="text-muted">読み込み中...</p>}
+      {!loading && sessions.length === 0 && <p className="text-muted">まだ記録がありません。</p>}
 
-      {!loading && sessions.length === 0 && <p>まだ記録がありません。</p>}
-
-      <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      <ul className="flex flex-col gap-3 list-none p-0">
         {sessions.map((session) => (
-          <li
-            key={session.sleep_date}
-            style={{
-              border: '1px solid #e5e7eb',
-              borderRadius: '12px',
-              padding: '16px',
-            }}
-          >
-            <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>{session.sleep_date}の夜</div>
-            <div>🌙 就寝: {formatTime(session.sleep_time)}</div>
-            <div>☀️ 起床: {formatTime(session.wake_time)}</div>
-            <div style={{ marginTop: '4px', color: '#4338ca', fontWeight: 'bold' }}>
-              💤 睡眠時間: {formatDuration(session.duration_minutes)}
-            </div>
+          <li key={session.sleep_date}>
+            <Card>
+              <div className="font-bold mb-1">{session.sleep_date}の夜</div>
+              <div>🌙 就寝: {formatTime(session.sleep_time)}</div>
+              <div>☀️ 起床: {formatTime(session.wake_time)}</div>
+              <div className="mt-1 text-primary font-bold">
+                💤 睡眠時間: {formatDuration(session.duration_minutes)}
+              </div>
+            </Card>
           </li>
         ))}
       </ul>
 
-      <div style={{ marginTop: '24px', textAlign: 'center' }}>
-        <Link href="/">← ボタンページに戻る</Link>
+      <div className="mt-6 text-center">
+        <Link href="/" className="text-primary">
+          ← ボタンページに戻る
+        </Link>
       </div>
     </main>
   );

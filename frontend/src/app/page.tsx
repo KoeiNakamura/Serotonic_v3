@@ -4,14 +4,14 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { authFetch, getAccessToken, clearTokens } from '@/lib/api';
+import { Button } from '@/components/Button';
 
 type Status = { message: string; time?: string; note?: string } | null;
 
 export default function Home() {
   const [status, setStatus] = useState<Status>(null);
-  const [username, setUsername] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [pressed, setPressed] = useState(false);
+  const [username, setUsername] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -68,75 +68,31 @@ export default function Home() {
   };
 
   return (
-    <main
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: '24px',
-        padding: '24px',
-      }}
-    >
-      <h1 style={{ fontSize: '2rem', fontWeight: 'bold' }}>Serotonic</h1>
-      {username && (
-        <p style={{ fontSize: '1rem', color: '#9ca3af', marginTop: '-16px' }}>
-          Hello, {username}！
-        </p>
-      )}
+    <main className="min-h-screen flex flex-col items-center justify-center gap-6 p-6">
+      <div className="text-center">
+        <h1 className="text-3xl font-bold">Serotonic</h1>
+        {username && <p className="text-muted mt-1">Hello, {username}！</p>}
+      </div>
 
-      <button
-        onClick={recordWake}
-        onPointerDown={() => setPressed(true)}
-        onPointerUp={() => setPressed(false)}
-        onPointerLeave={() => setPressed(false)}
-        disabled={loading}
-        style={{
-          width: '80%',
-          maxWidth: '320px',
-          padding: '24px',
-          fontSize: '1.25rem',
-          borderRadius: '16px',
-          border: 'none',
-          background: pressed ? '#d99a1a' : '#fbbf24',
-          color: '#1f2937',
-          transform: pressed ? 'scale(0.96)' : 'scale(1)',
-          transition: 'transform 0.1s ease, background 0.1s ease',
-        }}
-      >
+      <Button variant="accent" onClick={recordWake} disabled={loading} className="w-4/5 max-w-xs">
         {loading ? '記録中...' : '☀️ 起床'}
-      </button>
+      </Button>
 
       {status && (
-        <div style={{ textAlign: 'center' }}>
+        <div className="text-center">
           <p>{status.message}</p>
           {status.time && (
-            <p style={{ fontSize: '0.875rem', color: '#6b7280' }}>
-              {new Date(status.time).toLocaleString('ja-JP')}
-            </p>
+            <p className="text-sm text-muted">{new Date(status.time).toLocaleString('ja-JP')}</p>
           )}
-          {status.note && (
-            <p style={{ fontSize: '0.75rem', color: '#dc2626' }}>{status.note}</p>
-          )}
+          {status.note && <p className="text-sm text-danger">{status.note}</p>}
         </div>
       )}
 
-      <Link href="/logs" style={{ marginTop: '16px', color: '#4338ca' }}>
+      <Link href="/logs" className="text-primary mt-2">
         ログ一覧を見る →
       </Link>
 
-      <button
-        onClick={handleLogout}
-        style={{
-          marginTop: '8px',
-          background: 'none',
-          border: 'none',
-          color: '#9ca3af',
-          fontSize: '0.875rem',
-          textDecoration: 'underline',
-        }}
-      >
+      <button onClick={handleLogout} className="text-muted text-sm underline">
         ログアウト
       </button>
     </main>
