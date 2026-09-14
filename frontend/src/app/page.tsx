@@ -5,13 +5,21 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { authFetch, getAccessToken, clearTokens } from '@/lib/api';
 import { Button } from '@/components/Button';
+import { Card } from '@/components/Card';
 
 type Status = { message: string; time?: string; note?: string } | null;
+
+type Recommendation = {
+  recommended_bedtime: string | null;
+  sample_size: number;
+  min_samples: number;
+};
 
 export default function Home() {
   const [status, setStatus] = useState<Status>(null);
   const [loading, setLoading] = useState(false);
   const [username, setUsername] = useState<string | null>(null);
+  const [recommendation, setRecommendation] = useState<Recommendation | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -22,6 +30,10 @@ export default function Home() {
     authFetch('/me/')
       .then((res) => res.json())
       .then((data) => setUsername(data.username));
+
+    authFetch('/recommendation/')
+      .then((res) => res.json())
+      .then((data) => setRecommendation(data));
   }, [router]);
 
   const recordWake = async () => {
@@ -73,6 +85,28 @@ export default function Home() {
         <h1 className="text-3xl font-bold">Serotonic</h1>
         {username && <p className="text-muted mt-1">Hello, {username}！</p>}
       </div>
+
+      {recommendation && (
+        <Card className="text-center w-4/5 max-w-xs">
+          {recommendation.recommended_bedtime ? (
+            <>
+              <div className="text-xs text-muted mb-1 whitespace-pre-line">
+                {'これまでのあなたの記録に基づく\n本日の推奨される就寝時刻の参考値'}
+              </div>
+              <div className="text-2xl font-bold text-accent">
+                {recommendation.recommended_bedtime}
+              </div>
+              <div className="text-xs text-muted mt-1">
+                （{recommendation.sample_size}件のデータから算出）
+              </div>
+            </>
+          ) : (
+            <div className="text-sm text-muted">
+              あと{recommendation.min_samples - recommendation.sample_size}件、調子の記録が集まると就寝時刻の参考値が表示されます
+            </div>
+          )}
+        </Card>
+      )}
 
       <Button variant="accent" onClick={recordWake} disabled={loading} className="w-4/5 max-w-xs">
         {loading ? '記録中...' : '☀️ 起床'}

@@ -7,6 +7,7 @@ from .views import (
     whoami,
     record_checkin,
     TodayCheckInsView,
+    RecommendedBedtimeView,
 )
 
 urlpatterns = [
@@ -17,4 +18,5 @@ urlpatterns = [
     path('me/', whoami),
     path('checkin/', record_checkin),
     path('checkin/today/', TodayCheckInsView.as_view()),
+    path('recommendation/', RecommendedBedtimeView.as_view()),
 ]
