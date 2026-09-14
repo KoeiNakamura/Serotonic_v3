@@ -70,8 +70,6 @@ export default function LogsPage() {
 
       {!loading && sessions.length > 0 && <WeekBarGraph sessions={sessions} />}
 
-
-
       {loading && <p className="text-muted">読み込み中...</p>}
 
       {!loading && sessions.length === 0 && (
