@@ -19,3 +19,6 @@ db.sqlite3
 # OS-specific (Windows/Mac)
 .DS_Store
 Thumbs.db
+
+# Generated
+structure.txt
