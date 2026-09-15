@@ -1,7 +1,21 @@
 # Serotonic_v3
 
-A personal routine/energy tracker app. Currently building an MVP focused
-solely on recording sleep and wake-up times.
+A personal routine/energy tracker app for logging sleep, satisfaction
+check-ins, and (eventually) a data-driven bedtime recommendation.
+
+## Project Status: Complete (MVP)
+
+As of September 2026, active development on this project is paused. The
+original goals — practicing Issue-driven development (Issue → branch →
+PR → merge) and shipping a working MVP end-to-end — have both been
+achieved. The deeper motivation for building this app turned out to be
+less about optimizing sleep and more about learning how to direct an
+AI coding assistant and understand a full development workflow; that
+goal has been met. See `RETROSPECTIVE.md` for a fuller account.
+
+A few features (a study-time stopwatch, LAN/mobile access, and a
+production deployment) were deliberately left unimplemented — see the
+closed "wontfix" issues in this repo for the reasoning behind each.
 
 ## Tech Stack
 
@@ -9,6 +23,17 @@ solely on recording sleep and wake-up times.
 - Backend: Django REST Framework, Docker
 - DB: MySQL 8.0
 - Infra (local dev): Docker Compose
+
+## Features
+
+- Wake-up / sleep time logging, with a prompt for the previous night's
+  bedtime when recording a wake-up
+- Sleep session log with duration calculation, weekly bar graph
+- JWT-based login (supports multiple users, each seeing only their own data)
+- Wake / midday / bedtime satisfaction check-ins
+- A bedtime recommendation derived from each user's own historical
+  check-in data (clearly labeled as a personal reference value, not
+  medical advice)
 
 ## Resuming Development
 
@@ -51,18 +76,20 @@ docker-compose stop  # stop containers (saves memory, config is preserved)
 
 This project follows an Issue-driven development flow (Issue → feature
 branch → implementation → commit → PR → merge) as a deliberate practice
-exercise. Any new work should start with a GitHub Issue before implementation.
+exercise.
 
-## Current Progress
+## Progress
 
-- [x] Set up Docker dev environment (Next.js + Django + MySQL)
-- [x] Implement DailyLog model (daily-record schema)
-- [x] Implement REST API (`/api/wake/`, `/api/sleep/`, `/api/logs/`)
-- [x] Fix timezone to Asia/Tokyo
-- [x] Frontend: wake/sleep button page
-- [x] Frontend: log list page
-- [ ] LAN access for mobile testing — **on hold**. Buttons don't respond
-      on iPhone Safari due to a suspected Next.js hydration failure; root
-      cause not yet confirmed (see related GitHub Issue for details).
-- [ ] Production deployment (VPS + Docker) — on hold pending budget
-      (planning to revisit once part-time income is secured).
+- [x] Docker dev environment (Next.js + Django + MySQL)
+- [x] DailyLog model and REST API (wake/sleep/logs/sessions)
+- [x] Timezone fix (Asia/Tokyo)
+- [x] Frontend: wake/sleep button page and log list page
+- [x] JWT authentication, multi-user support
+- [x] Design system (color tokens, shared components, custom font/icon)
+- [x] Redesigned log list, weekly sleep duration graph
+- [x] Satisfaction check-ins (wake/midday/bedtime)
+- [x] Bedtime recommendation from check-in history
+- [x] Repo structure script (`get_structure.sh`)
+- [ ] Study-time stopwatch — **won't do** (see closed issue #18)
+- [ ] LAN access for mobile testing — **won't do** (see closed issue #12)
+- [ ] Production deployment — **won't do** (see closed issue #11)
