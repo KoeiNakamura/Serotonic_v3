@@ -71,6 +71,11 @@ CORS_ALLOWED_ORIGINS = os.getenv(
     'http://localhost:3000,http://127.0.0.1:3000'
 ).split(',')
 
+# .vercel.app で終わるすべてのドメインからのアクセスを一括許可する
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https://.*\.vercel\.app$",
+]
+
 ROOT_URLCONF = 'config.urls'
 
 TEMPLATES = [
